@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "troy.omameter",
+  "name": "Omameter",
+  "version": "1.0.0",
+  "author": "Troy Thomas",
+  "license": "MIT",
+  "description": "Four 1px meters (CPU, RAM, network, GPU RAM) on the outer edge of the Omarchy menubar, between the screen bezel and the bar.",
+  "kinds": ["panel"],
+  "keepLoaded": true,
+  "entryPoints": {
+    "panel": "Panel.qml"
+  }
+}
