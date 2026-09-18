@@ -12,6 +12,8 @@ A super-minimal Omarchy plugin with one meter on each screen edge: CPU at the to
 
 CPU, RAM, and root filesystem are three pixels thick. The bottom network meter is one pixel thick, with one background pixel below it: upload occupies the left half and download the right half. Upload grows leftward and download grows rightward from the screen center. The network halves share a decaying peak, so their lengths show the relative rates. The network track uses the theme's muted color to remain visible at idle; all four edge strips use the bar's background color. CPU grows outward from the horizontal center; RAM and root filesystem grow upward from the bottom edge. Meter fills use the active Omarchy theme: accent for CPU and download, bar text for RAM and upload, and muted for filesystem. As usage rises, each fill blends toward the theme’s bar active color. Clicks pass through.
 
+Colors are bound to Omarchy's live theme palette, so a theme switch updates the fills, tracks, markers, and bar-matched backgrounds without restarting the shell.
+
 The fills rise smoothly over 280 ms and fall over 900 ms. A thin theme-colored high-water mark stays at the latest peak for 1.4 seconds, then fades over 4.2 seconds. The top CPU bar shows the mark at both ends of its center-out fill; each network half shows one mark at its outer end, and the side bars show it at the upper end.
 
 On the filesystem meter, the marker rests at the current usage level and flashes when the root filesystem's block device completes reads or writes. If `/` is on a network or virtual filesystem without a local block device, usage still works but the I/O flash is unavailable.

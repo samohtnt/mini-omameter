@@ -21,19 +21,18 @@ Item {
   readonly property var meters: {
     if (root.meter === "network")
       return [
-        { key: "up", value: root.up, baseColor: Color.bar.text },
-        { key: "down", value: root.down, baseColor: Color.accent }
+        { key: "up", value: root.up },
+        { key: "down", value: root.down }
       ]
     if (root.meter === "ram")
-      return [{ key: "ram", value: root.ram, baseColor: Color.bar.text }]
+      return [{ key: "ram", value: root.ram }]
     if (root.meter === "disk")
-      return [{ key: "disk", value: root.disk, baseColor: Color.muted }]
-    return [{ key: "cpu", value: root.cpu, baseColor: Color.accent }]
+      return [{ key: "disk", value: root.disk }]
+    return [{ key: "cpu", value: root.cpu }]
   }
 
-  function fillColor(baseColor, percent) {
+  function fillColor(baseColor, hot, percent) {
     var p = Math.max(0, Math.min(100, Number(percent) || 0)) / 100
-    var hot = Color.bar.active
     return Qt.rgba(
       baseColor.r * (1 - p) + hot.r * p,
       baseColor.g * (1 - p) + hot.g * p,
@@ -56,6 +55,8 @@ Item {
         id: meterItem
         required property int index
         readonly property var meter: root.meters[index]
+        readonly property color baseColor: meter.key === "disk" ? Color.muted
+          : meter.key === "ram" || meter.key === "up" ? Color.bar.text : Color.accent
         readonly property real targetAmount: {
           var amount = Math.max(0, Math.min(1, (Number(meter.value) || 0) / 100))
           if (root.networkOnly && amount > 0 && grid.width > 0)
@@ -138,7 +139,7 @@ Item {
           y: root.vertical ? parent.height - height : 0
           width: root.vertical ? parent.width : parent.width * parent.displayedAmount
           height: root.vertical ? parent.height * parent.displayedAmount : parent.height
-          color: root.fillColor(parent.meter.baseColor, parent.displayedAmount * 100)
+          color: root.fillColor(parent.baseColor, Color.bar.active, parent.displayedAmount * 100)
         }
 
         Rectangle {
