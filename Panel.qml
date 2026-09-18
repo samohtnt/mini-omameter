@@ -65,33 +65,43 @@ Item {
 
     delegate: Component {
       PanelWindow {
+        id: overlay
         required property var modelData
 
         screen: modelData
         visible: root.showing
         color: "transparent"
-        // Zone 0 yields to the bar and sits on its inner edge (under a top
-        // bar). -1 is the layer-shell "real output edge" value, so meters
-        // sit on the bezel side. Set last: exclusiveZone writes the protocol
-        // value and would clobber Ignore if it came first as 0.
+        // Omarchy's bar (omarchy-bar) is WlrLayer.Top + ExclusionMode.Auto
+        // with the same 3-edge anchors as a reserved strip. A matching thin
+        // overlay is laid out in Hyprland's *usable* box, which starts on
+        // the inner edge of that reservation — under a top bar, that is the
+        // BOTTOM of the menubar.
+        //
+        // exclusiveZone: -1 is not enough: ExclusionMode.Ignore already
+        // sends protocol -1, and a 3-edge surface can still be parked in
+        // the usable box. Match KeyboardPanel / OSD / notifications: a
+        // fullscreen Ignore overlay (covers the bar), then place the strip
+        // on the output's outer edge (bezel), which is also the bar's
+        // outer edge. Do not assign exclusiveZone; that setter forces
+        // ExclusionMode.Normal.
         exclusionMode: ExclusionMode.Ignore
-        exclusiveZone: -1
-        implicitWidth: root.vertical ? root.stripPx : 0
-        implicitHeight: root.vertical ? 0 : root.stripPx
         mask: Region {}
         WlrLayershell.namespace: "omameter"
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
         anchors {
-          top: root.barPosition === "top" || root.vertical
-          bottom: root.barPosition === "bottom" || root.vertical
-          left: root.barPosition === "left" || !root.vertical
-          right: root.barPosition === "right" || !root.vertical
+          top: true
+          bottom: true
+          left: true
+          right: true
         }
 
         MeterStrip {
-          anchors.fill: parent
+          x: root.barPosition === "right" ? overlay.width - root.stripPx : 0
+          y: root.barPosition === "bottom" ? overlay.height - root.stripPx : 0
+          width: root.vertical ? root.stripPx : overlay.width
+          height: root.vertical ? overlay.height : root.stripPx
           edge: root.barPosition
           cpu: stats.cpu
           ram: stats.ram

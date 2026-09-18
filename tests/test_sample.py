@@ -111,17 +111,20 @@ class ManifestTests(unittest.TestCase):
         for name in ("Panel.qml", "MeterStrip.qml", "Sampler.qml", "sample.py"):
             self.assertTrue(os.path.isfile(os.path.join(root, name)), name)
 
-    def test_panel_uses_bezel_exclusive_zone(self):
+    def test_panel_is_fullscreen_bezel_overlay(self):
         root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         with open(os.path.join(root, "Panel.qml"), encoding="utf-8") as handle:
             qml = handle.read()
-        self.assertIn("exclusiveZone: -1", qml)
-        self.assertNotIn("exclusiveZone: 0", qml)
         self.assertIn("exclusionMode: ExclusionMode.Ignore", qml)
-        self.assertIn("top: root.barPosition === \"top\" || root.vertical", qml)
-        self.assertIn("bottom: root.barPosition === \"bottom\" || root.vertical", qml)
-        self.assertIn("left: root.barPosition === \"left\" || !root.vertical", qml)
-        self.assertIn("right: root.barPosition === \"right\" || !root.vertical", qml)
+        code = "\n".join(line for line in qml.splitlines() if not line.strip().startswith("//"))
+        self.assertNotIn("exclusiveZone:", code)
+        self.assertIn("WlrLayershell.layer: WlrLayer.Overlay", qml)
+        self.assertIn("anchors {\n          top: true\n          bottom: true\n          left: true\n          right: true\n        }", qml)
+        self.assertNotIn("anchors.fill: parent", qml)
+        self.assertIn('x: root.barPosition === "right" ? overlay.width - root.stripPx : 0', qml)
+        self.assertIn('y: root.barPosition === "bottom" ? overlay.height - root.stripPx : 0', qml)
+        self.assertIn("width: root.vertical ? root.stripPx : overlay.width", qml)
+        self.assertIn("height: root.vertical ? overlay.height : root.stripPx", qml)
 
 
 class OnceTests(unittest.TestCase):
