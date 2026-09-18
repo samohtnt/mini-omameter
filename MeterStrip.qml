@@ -65,9 +65,7 @@ Item {
           fillAnimation.duration = targetAmount > displayedAmount ? 280 : 900
           fillAnimation.start()
 
-          if (root.meter === "disk") {
-            peakAmount = targetAmount
-          } else if (targetAmount > 0 && (targetAmount > peakAmount || peakOpacity === 0)) {
+          if (root.meter !== "disk" && targetAmount > 0 && (targetAmount > peakAmount || peakOpacity === 0)) {
             peakAmount = targetAmount
             peakFade.stop()
             peakOpacity = 0.95
@@ -122,31 +120,29 @@ Item {
         }
 
         Rectangle {
+          id: usageFill
           x: root.vertical ? 0 : root.networkOnly ? (meterItem.index === 0 ? parent.width - width : 0) : (parent.width - width) / 2
           y: root.vertical ? parent.height - height : 0
           width: root.vertical ? parent.width : parent.width * parent.displayedAmount
           height: root.vertical ? parent.height * parent.displayedAmount : parent.height
           color: root.fillColor(parent.baseColor, Color.bar.active, parent.displayedAmount * 100)
+
+          Rectangle {
+            anchors.fill: parent
+            visible: root.meter === "disk"
+            color: Color.bar.text
+            opacity: meterItem.diskFlashOpacity
+          }
         }
 
         Rectangle {
-          visible: root.vertical
+          visible: root.vertical && root.meter !== "disk"
           x: 0
           y: Math.max(0, Math.min(parent.height - height, parent.height * (1 - parent.peakAmount) - height / 2))
           width: parent.width
-          height: root.meter === "disk" ? 12 : 2
+          height: 2
           color: Color.bar.text
-          opacity: root.meter === "disk" ? 0.9 : parent.peakOpacity
-        }
-
-        Rectangle {
-          visible: root.meter === "disk"
-          x: 0
-          y: Math.max(0, Math.min(parent.height - height, parent.height * (1 - parent.peakAmount) - height / 2))
-          width: parent.width
-          height: 20
-          color: Color.bar.active
-          opacity: parent.diskFlashOpacity
+          opacity: parent.peakOpacity
         }
 
         Repeater {

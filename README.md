@@ -14,9 +14,9 @@ Each monitor gets 1-pixel meters below 1200 logical pixels of height, or 3-pixel
 
 Colors are bound to Omarchy's live theme palette, so a theme switch updates the fills, tracks, markers, and bar-matched backgrounds without restarting the shell.
 
-The fills rise smoothly over 280 ms and fall over 900 ms. A thin theme-colored high-water mark stays at the latest peak for 1.4 seconds, then fades over 4.2 seconds. The top CPU bar shows the mark at both ends of its center-out fill; each network half shows one mark at its outer end, and the side bars show it at the upper end.
+The fills rise smoothly over 280 ms and fall over 900 ms. A thin theme-colored high-water mark stays at the latest peak for 1.4 seconds, then fades over 4.2 seconds. The top CPU bar shows the mark at both ends of its center-out fill; each network half shows one mark at its outer end, and RAM shows it at the upper end.
 
-On the filesystem meter, a bright 12-pixel marker rests at the current usage level. A 20-pixel theme-colored flash appears at that marker when the root filesystem's block device completes reads or writes. If `/` is on a network or virtual filesystem without a local block device, usage still works but the I/O flash is unavailable.
+The filesystem meter highlights its filled usage area when the root filesystem's block device completes reads or writes. If `/` is on a network or virtual filesystem without a local block device, usage still works but the I/O flash is unavailable.
 
 ## Install on Omarchy
 
