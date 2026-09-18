@@ -73,6 +73,7 @@ omarchy-shell shell summon troy.omameter '{}'
 ```
 
 If the menubar autohides, the meters hide with it.
+Hiding the plugin explicitly also stops its sampler until it is shown again.
 
 ## Remove
 

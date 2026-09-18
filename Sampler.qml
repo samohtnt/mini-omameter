@@ -3,18 +3,26 @@ import Quickshell.Io
 
 Item {
   id: root
-  width: 0
-  height: 0
   visible: false
 
+  property bool active: true
   property real cpu: 0
   property real ram: 0
   property real down: 0
   property real up: 0
   property real disk: 0
   property int diskPulse: 0
-  property bool ready: false
-  property int intervalMs: 1000
+  property bool invalidOutputWarned: false
+
+  onActiveChanged: {
+    if (active) {
+      if (!samplerProc.running)
+        samplerProc.running = true
+    } else {
+      restartTimer.stop()
+      samplerProc.running = false
+    }
+  }
 
   readonly property string scriptPath: {
     var url = Qt.resolvedUrl("sample.py").toString()
@@ -41,18 +49,25 @@ Item {
         root.disk = sample.disk
       if (typeof sample.diskPulse === "number")
         root.diskPulse = sample.diskPulse
-      root.ready = true
-    } catch (e) {}
+      root.invalidOutputWarned = false
+    } catch (e) {
+      if (!root.invalidOutputWarned)
+        console.warn("Omameter: invalid sampler output", e)
+      root.invalidOutputWarned = true
+    }
   }
 
   Process {
     id: samplerProc
     running: true
-    command: ["python3", "-u", root.scriptPath, "--interval", String(Math.max(0.25, root.intervalMs / 1000))]
+    command: ["/usr/bin/python3", "-u", root.scriptPath]
     stdout: SplitParser {
       onRead: function(line) { root.applyLine(line) }
     }
-    onExited: restartTimer.restart()
+    onExited: {
+      if (root.active)
+        restartTimer.restart()
+    }
   }
 
   Timer {
@@ -60,7 +75,7 @@ Item {
     interval: 1500
     repeat: false
     onTriggered: {
-      if (!samplerProc.running)
+      if (root.active && !samplerProc.running)
         samplerProc.running = true
     }
   }

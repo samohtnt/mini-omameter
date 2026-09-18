@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "troy.omameter",
   "name": "Omameter",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Troy Thomas",
   "license": "MIT",
   "description": "CPU, RAM, root filesystem, and network meters on the four edges of the monitor.",

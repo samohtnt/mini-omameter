@@ -4,8 +4,8 @@ import qs.Commons
 Item {
   id: root
 
-  property string edge: "top"
   property string meter: "cpu"
+  property bool vertical: false
   property real cpu: 0
   property real ram: 0
   property real down: 0
@@ -13,23 +13,11 @@ Item {
   property real disk: 0
   property int diskPulse: 0
 
-  readonly property bool vertical: edge === "left" || edge === "right"
   readonly property bool networkOnly: meter === "network"
   readonly property int meterPx: networkOnly ? 1 : 3
   readonly property color trackColor: networkOnly ? Color.muted : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.14)
 
-  readonly property var meters: {
-    if (root.meter === "network")
-      return [
-        { key: "up", value: root.up },
-        { key: "down", value: root.down }
-      ]
-    if (root.meter === "ram")
-      return [{ key: "ram", value: root.ram }]
-    if (root.meter === "disk")
-      return [{ key: "disk", value: root.disk }]
-    return [{ key: "cpu", value: root.cpu }]
-  }
+  readonly property int meterCount: networkOnly ? 2 : 1
 
   function fillColor(baseColor, hot, percent) {
     var p = Math.max(0, Math.min(100, Number(percent) || 0)) / 100
@@ -44,21 +32,22 @@ Item {
   Grid {
     id: grid
     anchors.fill: parent
-    columns: root.vertical || root.networkOnly ? root.meters.length : 1
-    rows: root.vertical || root.networkOnly ? 1 : root.meters.length
+    columns: root.vertical || root.networkOnly ? root.meterCount : 1
+    rows: root.vertical || root.networkOnly ? 1 : root.meterCount
     spacing: 0
 
     Repeater {
-      model: root.meters.length
+      model: root.meterCount
 
       Rectangle {
         id: meterItem
         required property int index
-        readonly property var meter: root.meters[index]
-        readonly property color baseColor: meter.key === "disk" ? Color.muted
-          : meter.key === "ram" || meter.key === "up" ? Color.bar.text : Color.accent
+        readonly property real value: root.networkOnly ? (index === 0 ? root.up : root.down)
+          : root.meter === "ram" ? root.ram : root.meter === "disk" ? root.disk : root.cpu
+        readonly property color baseColor: root.meter === "disk" ? Color.muted
+          : root.meter === "ram" || (root.networkOnly && index === 0) ? Color.bar.text : Color.accent
         readonly property real targetAmount: {
-          var amount = Math.max(0, Math.min(1, (Number(meter.value) || 0) / 100))
+          var amount = Math.max(0, Math.min(1, (Number(value) || 0) / 100))
           if (root.networkOnly && amount > 0 && grid.width > 0)
             amount = Math.max(amount, 2 / grid.width)
           return amount

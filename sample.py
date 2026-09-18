@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import stat
 import sys
@@ -25,17 +26,17 @@ def read_text(path: str) -> str:
 
 
 def parse_cpu(stat_text: str) -> tuple[int, int] | None:
-    for line in stat_text.splitlines():
-        if not line.startswith("cpu "):
-            continue
-        fields = line.split()
-        if len(fields) < 5:
-            return None
+    fields = stat_text.partition("\n")[0].split()
+    if len(fields) < 5 or fields[0] != "cpu":
+        return None
+    try:
         values = [int(part) for part in fields[1:]]
-        total = sum(values)
-        idle = values[3] + (values[4] if len(values) > 4 else 0)
-        return idle, total
-    return None
+    except ValueError:
+        return None
+    # guest fields are already included in user and nice.
+    total = sum(values[:8])
+    idle = values[3] + (values[4] if len(values) > 4 else 0)
+    return idle, total
 
 
 def cpu_percent(previous: tuple[int, int], current: tuple[int, int]) -> float:
@@ -99,9 +100,15 @@ def parse_net_dev(text: str) -> dict[str, tuple[int, int]]:
 
 def parse_default_routes(route_text: str) -> list[str]:
     found: list[str] = []
-    for line in route_text.splitlines()[1:]:
+    for line in route_text.splitlines():
         fields = line.split()
-        if len(fields) > 1 and fields[1] == "00000000" and fields[0] not in found:
+        if len(fields) < 4 or fields[1] != "00000000":
+            continue
+        try:
+            active = int(fields[3], 16) & 1
+        except ValueError:
+            continue
+        if active and fields[0] not in found:
             found.append(fields[0])
     return found
 
@@ -137,11 +144,8 @@ def sum_bytes(net: dict[str, tuple[int, int]], ifaces: Iterable[str]) -> tuple[i
     return rx, tx
 
 
-def net_percent(rate_bps: float, peak_bps: float, floor_bps: float = 1_000_000.0) -> tuple[float, float]:
-    peak = max(peak_bps * 0.92, rate_bps, floor_bps)
-    if peak <= 0:
-        return 0.0, floor_bps
-    return max(0.0, min(100.0, (rate_bps / peak) * 100.0)), peak
+def network_peak(rate_bps: float, previous: float, floor_bps: float = 1_000_000.0) -> float:
+    return max(previous * 0.92, rate_bps, floor_bps)
 
 
 def filesystem_percent(path: str = "/", statvfs=os.statvfs) -> float:
@@ -164,13 +168,17 @@ def root_block_device(mountinfo: str, device_stat=os.stat) -> tuple[int, int] | 
         source = after.split()
         if not separator or len(fields) < 5 or fields[4] != "/" or len(source) < 2:
             continue
-        try:
-            device = device_stat(source[1])
-        except OSError:
-            pass
-        else:
-            if stat.S_ISBLK(device.st_mode):
-                return os.major(device.st_rdev), os.minor(device.st_rdev)
+        path = source[1]
+        for escaped, character in (("\\040", " "), ("\\011", "\t"), ("\\012", "\n"), ("\\134", "\\")):
+            path = path.replace(escaped, character)
+        if path.startswith("/"):
+            try:
+                device = device_stat(path)
+            except OSError:
+                pass
+            else:
+                if stat.S_ISBLK(device.st_mode):
+                    return os.major(device.st_rdev), os.minor(device.st_rdev)
         try:
             major, minor = fields[2].split(":", 1)
             return int(major), int(minor)
@@ -205,11 +213,11 @@ class Sampler:
         self.prev_stamp = 0.0
         self.net_peak = 1_000_000.0
         self.disk_device = root_block_device(self.reader("/proc/self/mountinfo"))
+        self.next_disk_probe = 0.0
         self.prev_disk_operations: tuple[int, int] | None = None
         self.disk_pulse = 0
-        self.ready = False
 
-    def snapshot(self) -> dict[str, float]:
+    def snapshot(self) -> dict[str, float | int]:
         stamp = self.now()
         cpu = parse_cpu(self.reader("/proc/stat"))
         ram = ram_percent(self.reader("/proc/meminfo"))
@@ -218,13 +226,15 @@ class Sampler:
         routes += parse_ipv6_default_routes(self.reader("/proc/net/ipv6_route"))
         ifaces = select_interfaces(routes, net.keys())
         rx, tx = sum_bytes(net, ifaces)
-        disk_ops = disk_operations(self.reader("/proc/diskstats"), self.disk_device)
-        if disk_ops is None:
+        diskstats = self.reader("/proc/diskstats")
+        disk_ops = disk_operations(diskstats, self.disk_device)
+        if disk_ops is None and stamp >= self.next_disk_probe:
+            self.next_disk_probe = stamp + 30
             device = root_block_device(self.reader("/proc/self/mountinfo"))
             if device != self.disk_device:
                 self.disk_device = device
                 self.prev_disk_operations = None
-                disk_ops = disk_operations(self.reader("/proc/diskstats"), device)
+                disk_ops = disk_operations(diskstats, device)
         if disk_ops is not None:
             if self.prev_disk_operations is not None and all(
                 current >= previous for current, previous in zip(disk_ops, self.prev_disk_operations)
@@ -235,7 +245,6 @@ class Sampler:
         cpu_pct = 0.0
         if cpu and self.prev_cpu:
             cpu_pct = cpu_percent(self.prev_cpu, cpu)
-            self.ready = True
         if cpu:
             self.prev_cpu = cpu
 
@@ -245,7 +254,7 @@ class Sampler:
         if self.prev_rx >= 0 and elapsed > 0 and same and rx >= self.prev_rx and tx >= self.prev_tx:
             down_rate = (rx - self.prev_rx) / elapsed
             up_rate = (tx - self.prev_tx) / elapsed
-            _, self.net_peak = net_percent(max(down_rate, up_rate), self.net_peak)
+            self.net_peak = network_peak(max(down_rate, up_rate), self.net_peak)
             down_pct = min(100.0, down_rate * 100.0 / self.net_peak)
             up_pct = min(100.0, up_rate * 100.0 / self.net_peak)
 
@@ -263,7 +272,7 @@ class Sampler:
         }
 
 
-def emit(sample: dict[str, float]) -> None:
+def emit(sample: dict[str, float | int]) -> None:
     sys.stdout.write(json.dumps(sample, separators=(",", ":")) + "\n")
     sys.stdout.flush()
 
@@ -271,16 +280,26 @@ def emit(sample: dict[str, float]) -> None:
 def run(interval: float) -> None:
     sampler = Sampler()
     sampler.snapshot()
-    time.sleep(min(0.25, max(0.05, interval / 4)))
+    time.sleep(min(0.25, interval / 4))
     emit(sampler.snapshot())
     while True:
-        time.sleep(max(0.25, interval))
+        time.sleep(interval)
         emit(sampler.snapshot())
+
+
+def interval_seconds(raw: str) -> float:
+    try:
+        value = float(raw)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("interval must be between 0.25 and 3600 seconds") from exc
+    if not math.isfinite(value) or not 0.25 <= value <= 3600:
+        raise argparse.ArgumentTypeError("interval must be between 0.25 and 3600 seconds")
+    return value
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Emit Omameter JSON samples.")
-    parser.add_argument("--interval", type=float, default=1.0, help="Seconds between samples.")
+    parser.add_argument("--interval", type=interval_seconds, default=1.0, help="Seconds between samples (at least 0.25).")
     parser.add_argument("--once", action="store_true", help="Print one sample and exit.")
     args = parser.parse_args()
     if args.once:

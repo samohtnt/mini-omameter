@@ -12,7 +12,6 @@ Item {
 
   readonly property bool barHidden: !!(root.shell && root.shell.bar && root.shell.bar.barHidden === true)
   readonly property bool showing: opened && !barHidden
-  readonly property int networkStripPx: 2
 
   function open(payloadJson) {
     root.opened = true
@@ -22,7 +21,7 @@ Item {
     root.opened = false
   }
 
-  Sampler { id: stats }
+  Sampler { id: stats; active: root.opened }
 
   Variants {
     model: Quickshell.screens
@@ -39,7 +38,7 @@ Item {
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { top: true; left: true; right: true }
-        MeterStrip { anchors.fill: parent; meter: "cpu"; edge: "top"; cpu: stats.cpu }
+        MeterStrip { anchors.fill: parent; meter: "cpu"; cpu: stats.cpu }
       }
     }
   }
@@ -59,7 +58,7 @@ Item {
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true }
-        MeterStrip { anchors.fill: parent; meter: "ram"; edge: "left"; ram: stats.ram }
+        MeterStrip { anchors.fill: parent; meter: "ram"; vertical: true; ram: stats.ram }
       }
     }
   }
@@ -79,7 +78,7 @@ Item {
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { top: true; bottom: true; right: true }
-        MeterStrip { anchors.fill: parent; meter: "disk"; edge: "right"; disk: stats.disk; diskPulse: stats.diskPulse }
+        MeterStrip { anchors.fill: parent; meter: "disk"; vertical: true; disk: stats.disk; diskPulse: stats.diskPulse }
       }
     }
   }
@@ -93,7 +92,7 @@ Item {
         visible: root.showing
         color: Color.bar.background
         exclusionMode: ExclusionMode.Ignore
-        implicitHeight: root.networkStripPx
+        implicitHeight: 2
         mask: Region {}
         WlrLayershell.namespace: "omameter-network"
         WlrLayershell.layer: WlrLayer.Bottom
@@ -105,7 +104,6 @@ Item {
           anchors.right: parent.right
           height: 1
           meter: "network"
-          edge: "top"
           down: stats.down
           up: stats.up
         }
