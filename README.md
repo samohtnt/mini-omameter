@@ -10,7 +10,7 @@ A super-minimal Omarchy plugin with one meter on each screen edge: CPU at the to
               ← UP / DOWN →
 ```
 
-CPU, RAM, and root filesystem are three pixels thick. The bottom network meter is one pixel thick, with one background pixel below it: upload occupies the left half and download the right half. Upload grows leftward and download grows rightward from the screen center. The network halves share a decaying peak, so their lengths show the relative rates. The network track uses the theme's muted color to remain visible at idle; all four edge strips use the bar's background color. CPU grows outward from the horizontal center; RAM and root filesystem grow upward from the bottom edge. Meter fills use the active Omarchy theme: accent for CPU and download, bar text for RAM and upload, and muted for filesystem. As usage rises, each fill blends toward the theme’s bar active color. Clicks pass through.
+Each monitor gets 1-pixel meters below 1200 logical pixels of height, or 3-pixel meters at 1200 and above. The bottom network meter is one split bar: upload occupies the left half and download the right half. Upload grows leftward and download grows rightward from the screen center. The network halves share a decaying peak, so their lengths show the relative rates. The network track uses the theme's muted color to remain visible at idle; all four edge strips use the bar's background color. CPU grows outward from the horizontal center; RAM and root filesystem grow upward from the bottom edge. Meter fills use the active Omarchy theme: accent for CPU and download, bar text for RAM and upload, and muted for filesystem. As usage rises, each fill blends toward the theme’s bar active color. Clicks pass through.
 
 Colors are bound to Omarchy's live theme palette, so a theme switch updates the fills, tracks, markers, and bar-matched backgrounds without restarting the shell.
 
@@ -34,14 +34,14 @@ omarchy plugin add https://github.com/samohtnt/mini-omatop.git --enable
 
 The installer clones into `~/.config/omarchy/plugins/troy.mini-omatop`, validates the manifest, and enables the panel. `keepLoaded` mounts it for the session, so the meters appear as soon as the shell loads the plugin.
 
-To keep windows clear of all four strips, reserve three pixels at the top, left, and right, and two at the bottom of each monitor in `~/.config/hypr/monitors.lua`. Add `reserved_area` to the existing `hl.monitor` rule for each output, preserving its mode, position, and scale:
+To keep windows clear of all four strips, add `reserved_area` to each monitor's existing `hl.monitor` rule in `~/.config/hypr/monitors.lua`, preserving its mode, position, and scale. Use 3 pixels on every edge for monitors at least 1200 logical pixels tall:
 
 ```lua
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto",
-  reserved_area = { top = 3, bottom = 2, left = 3, right = 3 } })
+  reserved_area = { top = 3, bottom = 3, left = 3, right = 3 } })
 ```
 
-The empty output matches monitors without a more specific rule. If your configuration has output-specific rules, add the same `reserved_area` to those rules.
+Use `{ top = 1, bottom = 1, left = 1, right = 1 }` for monitors below 1200 logical pixels tall. The empty output matches monitors without a more specific rule. If your configuration has output-specific rules, set `reserved_area` on each rule to match that monitor's meter thickness. Scale settings can change a monitor's logical height.
 
 Hyprland places a top bar below the CPU strip and keeps tiled windows clear of the side and bottom strips.
 

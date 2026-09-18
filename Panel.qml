@@ -13,6 +13,10 @@ Item {
   readonly property bool barHidden: !!(root.shell && root.shell.bar && root.shell.bar.barHidden === true)
   readonly property bool showing: opened && !barHidden
 
+  function edgePixels(display) {
+    return display.height >= 1200 ? 3 : 1
+  }
+
   function open(payloadJson) {
     root.opened = true
   }
@@ -32,7 +36,7 @@ Item {
         visible: root.showing
         color: Color.bar.background
         exclusionMode: ExclusionMode.Ignore
-        implicitHeight: 3
+        implicitHeight: root.edgePixels(modelData)
         mask: Region {}
         WlrLayershell.namespace: "mini-omatop-cpu"
         WlrLayershell.layer: WlrLayer.Bottom
@@ -52,7 +56,7 @@ Item {
         visible: root.showing
         color: Color.bar.background
         exclusionMode: ExclusionMode.Ignore
-        implicitWidth: 3
+        implicitWidth: root.edgePixels(modelData)
         mask: Region {}
         WlrLayershell.namespace: "mini-omatop-ram"
         WlrLayershell.layer: WlrLayer.Bottom
@@ -72,7 +76,7 @@ Item {
         visible: root.showing
         color: Color.bar.background
         exclusionMode: ExclusionMode.Ignore
-        implicitWidth: 3
+        implicitWidth: root.edgePixels(modelData)
         mask: Region {}
         WlrLayershell.namespace: "mini-omatop-disk"
         WlrLayershell.layer: WlrLayer.Bottom
@@ -92,17 +96,14 @@ Item {
         visible: root.showing
         color: Color.bar.background
         exclusionMode: ExclusionMode.Ignore
-        implicitHeight: 2
+        implicitHeight: root.edgePixels(modelData)
         mask: Region {}
         WlrLayershell.namespace: "mini-omatop-network"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { bottom: true; left: true; right: true }
         MeterStrip {
-          anchors.top: parent.top
-          anchors.left: parent.left
-          anchors.right: parent.right
-          height: 1
+          anchors.fill: parent
           meter: "network"
           down: stats.down
           up: stats.up

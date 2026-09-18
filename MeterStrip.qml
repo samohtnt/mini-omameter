@@ -14,7 +14,6 @@ Item {
   property int diskPulse: 0
 
   readonly property bool networkOnly: meter === "network"
-  readonly property int meterPx: networkOnly ? 1 : 3
   readonly property color trackColor: networkOnly ? Color.muted : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.14)
 
   readonly property int meterCount: networkOnly ? 2 : 1
@@ -89,8 +88,8 @@ Item {
             diskFlash.restart()
         }
 
-        width: root.vertical ? root.meterPx : root.networkOnly ? grid.width / 2 : grid.width
-        height: root.vertical ? grid.height : root.meterPx
+        width: root.networkOnly ? grid.width / 2 : grid.width
+        height: grid.height
         color: root.trackColor
 
         NumberAnimation {
