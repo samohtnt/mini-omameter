@@ -1,25 +1,20 @@
 # Omameter
 
-A super-minimal Omarchy plugin: four 1px meters on the outer edge of the menubar.
+A super-minimal Omarchy plugin with one meter on each screen edge: CPU at the top, RAM on the left, root filesystem on the right, and network at the bottom.
 
 ```
-bezel
-  CPU  ████████░░░░░░░░░░░░
-  RAM  ██████░░░░░░░░░░░░░░
-  NET  ██░░░░░░░░░░░░░░░░░░
-  GPU  ████████████░░░░░░░░
-menubar
+                 ← CPU →
+               ┌────────┐
+         RAM ↑  │ screen │  DISK ↑
+               └────────┘
+              ← UP / DOWN →
 ```
 
-Each meter is one pixel thick. No chrome, no labels, no extra reserved space. The strip sits between the screen bezel and the Omarchy bar and follows the bar when you drag it:
+CPU, RAM, and root filesystem are three pixels thick. The bottom network meter is one pixel thick, with one background pixel below it: upload occupies the left half and download the right half. Upload grows leftward and download grows rightward from the screen center. The network halves share a decaying peak, so their lengths show the relative rates. The network track uses the theme's muted color to remain visible at idle; all four edge strips use the bar's background color. CPU grows outward from the horizontal center; RAM and root filesystem grow upward from the bottom edge. Meter fills use the active Omarchy theme: accent for CPU and download, bar text for RAM and upload, and muted for filesystem. As usage rises, each fill blends toward the theme’s bar active color. Clicks pass through.
 
-| Bar position | Meters |
-| --- | --- |
-| Top | 4px strip above the bar (CPU nearest the bezel) |
-| Bottom | 4px strip below the bar (CPU nearest the bezel) |
-| Left / right | 4px strip on the outer edge (CPU nearest the bezel) |
+The fills rise smoothly over 280 ms and fall over 900 ms. A thin theme-colored high-water mark stays at the latest peak for 1.4 seconds, then fades over 4.2 seconds. The top CPU bar shows the mark at both ends of its center-out fill; each network half shows one mark at its outer end, and the side bars show it at the upper end.
 
-Meters, from the bezel inward: **CPU**, **RAM**, **network**, **GPU RAM**. Fill length is usage. Color heats from the meter’s hue toward red as the value climbs. Clicks pass through.
+On the filesystem meter, the marker rests at the current usage level and flashes when the root filesystem's block device completes reads or writes. If `/` is on a network or virtual filesystem without a local block device, usage still works but the I/O flash is unavailable.
 
 ## Install on Omarchy
 
@@ -35,7 +30,20 @@ Or from a published git URL:
 omarchy plugin add https://github.com/samohtnt/mini-omameter.git --enable
 ```
 
-The installer clones into `~/.config/omarchy/plugins/troy.omameter`, validates the manifest, and enables the panel. `keepLoaded` mounts it for the session, so the meters appear as soon as the shell loads the plugin. If the strip is missing after enable:
+The installer clones into `~/.config/omarchy/plugins/troy.omameter`, validates the manifest, and enables the panel. `keepLoaded` mounts it for the session, so the meters appear as soon as the shell loads the plugin.
+
+To keep windows clear of all four strips, reserve three pixels at the top, left, and right, and two at the bottom of each monitor in `~/.config/hypr/monitors.lua`. Add `reserved_area` to the existing `hl.monitor` rule for each output, preserving its mode, position, and scale:
+
+```lua
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto",
+  reserved_area = { top = 3, bottom = 2, left = 3, right = 3 } })
+```
+
+The empty output matches monitors without a more specific rule. If your configuration has output-specific rules, add the same `reserved_area` to those rules.
+
+Hyprland places a top bar below the CPU strip and keeps tiled windows clear of the side and bottom strips.
+
+If the strip is missing after enable:
 
 ```sh
 omarchy-shell shell rescanPlugins
@@ -76,8 +84,9 @@ omarchy plugin remove troy.omameter
 | --- | --- |
 | CPU | `/proc/stat` idle/total deltas |
 | RAM | `/proc/meminfo` (`MemTotal` − `MemAvailable`) |
-| Network | `/proc/net/dev` on the default-route interface, scaled against a decaying peak (1 MB/s floor) |
-| GPU RAM | sysfs `mem_info_vram_used` / `mem_info_vram_total`; `nvidia-smi` only if sysfs has no VRAM counters |
+| Download / upload | `/proc/net/dev` receive and transmit bytes on IPv4/IPv6 default-route interfaces, or all non-loopback interfaces when there is no default route; shared decaying peak (1 MB/s floor) |
+| Root filesystem | `os.statvfs("/")`, used space as a percentage of used plus user-available space |
+| Root disk activity | `/proc/self/mountinfo` identifies the root block device; `/proc/diskstats` reports completed reads and writes |
 
 No extra packages. Python 3 is used as a long-running sampler inside `omarchy-shell`. Plugins run unsandboxed in that process — read the files before you enable them.
 

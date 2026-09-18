@@ -9,8 +9,10 @@ Item {
 
   property real cpu: 0
   property real ram: 0
-  property real net: 0
-  property real gpu: 0
+  property real down: 0
+  property real up: 0
+  property real disk: 0
+  property int diskPulse: 0
   property bool ready: false
   property int intervalMs: 1000
 
@@ -31,10 +33,14 @@ Item {
         root.cpu = sample.cpu
       if (typeof sample.ram === "number")
         root.ram = sample.ram
-      if (typeof sample.net === "number")
-        root.net = sample.net
-      if (typeof sample.gpu === "number")
-        root.gpu = sample.gpu
+      if (typeof sample.down === "number")
+        root.down = sample.down
+      if (typeof sample.up === "number")
+        root.up = sample.up
+      if (typeof sample.disk === "number")
+        root.disk = sample.disk
+      if (typeof sample.diskPulse === "number")
+        root.diskPulse = sample.diskPulse
       root.ready = true
     } catch (e) {}
   }

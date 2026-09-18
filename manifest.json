@@ -5,7 +5,7 @@
   "version": "1.0.1",
   "author": "Troy Thomas",
   "license": "MIT",
-  "description": "Four 1px meters (CPU, RAM, network, GPU RAM) on the outer edge of the Omarchy menubar, between the screen bezel and the bar.",
+  "description": "CPU, RAM, root filesystem, and network meters on the four edges of the monitor.",
   "kinds": ["panel"],
   "keepLoaded": true,
   "entryPoints": {

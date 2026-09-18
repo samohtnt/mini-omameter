@@ -1,6 +1,5 @@
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
 import qs.Commons
 
@@ -11,25 +10,9 @@ Item {
   property var manifest: null
   property bool opened: true
 
-  property string configPosition: "top"
-
-  readonly property string barPosition: {
-    var pos = ""
-    if (root.shell && root.shell.bar && root.shell.bar.position)
-      pos = String(root.shell.bar.position)
-    else if (root.shell && root.shell.barConfig && root.shell.barConfig.position)
-      pos = String(root.shell.barConfig.position)
-    else
-      pos = root.configPosition
-    if (["top", "bottom", "left", "right"].indexOf(pos) === -1)
-      return "top"
-    return pos
-  }
   readonly property bool barHidden: !!(root.shell && root.shell.bar && root.shell.bar.barHidden === true)
-  readonly property bool vertical: barPosition === "left" || barPosition === "right"
-  readonly property int meterCount: 4
-  readonly property int stripPx: meterCount
   readonly property bool showing: opened && !barHidden
+  readonly property int networkStripPx: 2
 
   function open(payloadJson) {
     root.opened = true
@@ -39,64 +22,92 @@ Item {
     root.opened = false
   }
 
-  function readConfigPosition(raw) {
-    try {
-      var parsed = JSON.parse(String(raw || ""))
-      var pos = parsed && parsed.bar ? String(parsed.bar.position || "") : ""
-      if (["top", "bottom", "left", "right"].indexOf(pos) !== -1)
-        root.configPosition = pos
-    } catch (e) {}
-  }
+  Sampler { id: stats }
 
-  FileView {
-    path: Quickshell.env("HOME") + "/.config/omarchy/shell.json"
-    watchChanges: true
-    printErrors: false
-    onLoaded: root.readConfigPosition(text())
-    onFileChanged: reload()
-  }
-
-  Sampler {
-    id: stats
+  Variants {
+    model: Quickshell.screens
+    delegate: Component {
+      PanelWindow {
+        required property var modelData
+        screen: modelData
+        visible: root.showing
+        color: Color.bar.background
+        exclusionMode: ExclusionMode.Ignore
+        implicitHeight: 3
+        mask: Region {}
+        WlrLayershell.namespace: "omameter-cpu"
+        WlrLayershell.layer: WlrLayer.Bottom
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        anchors { top: true; left: true; right: true }
+        MeterStrip { anchors.fill: parent; meter: "cpu"; edge: "top"; cpu: stats.cpu }
+      }
+    }
   }
 
   Variants {
     model: Quickshell.screens
-
     delegate: Component {
       PanelWindow {
         required property var modelData
-
         screen: modelData
         visible: root.showing
-        color: "transparent"
-        // Zone 0 yields to the bar and sits on its inner edge (under a top
-        // bar). -1 is the layer-shell "real output edge" value, so meters
-        // sit on the bezel side. Set last: exclusiveZone writes the protocol
-        // value and would clobber Ignore if it came first as 0.
+        color: Color.bar.background
         exclusionMode: ExclusionMode.Ignore
-        exclusiveZone: -1
-        implicitWidth: root.vertical ? root.stripPx : 0
-        implicitHeight: root.vertical ? 0 : root.stripPx
+        implicitWidth: 3
         mask: Region {}
-        WlrLayershell.namespace: "omameter"
-        WlrLayershell.layer: WlrLayer.Overlay
+        WlrLayershell.namespace: "omameter-ram"
+        WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        anchors { top: true; bottom: true; left: true }
+        MeterStrip { anchors.fill: parent; meter: "ram"; edge: "left"; ram: stats.ram }
+      }
+    }
+  }
 
-        anchors {
-          top: root.barPosition === "top" || root.vertical
-          bottom: root.barPosition === "bottom" || root.vertical
-          left: root.barPosition === "left" || !root.vertical
-          right: root.barPosition === "right" || !root.vertical
-        }
+  Variants {
+    model: Quickshell.screens
+    delegate: Component {
+      PanelWindow {
+        required property var modelData
+        screen: modelData
+        visible: root.showing
+        color: Color.bar.background
+        exclusionMode: ExclusionMode.Ignore
+        implicitWidth: 3
+        mask: Region {}
+        WlrLayershell.namespace: "omameter-disk"
+        WlrLayershell.layer: WlrLayer.Bottom
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        anchors { top: true; bottom: true; right: true }
+        MeterStrip { anchors.fill: parent; meter: "disk"; edge: "right"; disk: stats.disk; diskPulse: stats.diskPulse }
+      }
+    }
+  }
 
+  Variants {
+    model: Quickshell.screens
+    delegate: Component {
+      PanelWindow {
+        required property var modelData
+        screen: modelData
+        visible: root.showing
+        color: Color.bar.background
+        exclusionMode: ExclusionMode.Ignore
+        implicitHeight: root.networkStripPx
+        mask: Region {}
+        WlrLayershell.namespace: "omameter-network"
+        WlrLayershell.layer: WlrLayer.Bottom
+        WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+        anchors { bottom: true; left: true; right: true }
         MeterStrip {
-          anchors.fill: parent
-          edge: root.barPosition
-          cpu: stats.cpu
-          ram: stats.ram
-          net: stats.net
-          gpu: stats.gpu
+          anchors.top: parent.top
+          anchors.left: parent.left
+          anchors.right: parent.right
+          height: 1
+          meter: "network"
+          edge: "top"
+          down: stats.down
+          up: stats.up
         }
       }
     }
