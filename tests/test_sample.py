@@ -153,7 +153,7 @@ class ManifestTests(unittest.TestCase):
         with open(os.path.join(root, "manifest.json"), encoding="utf-8") as handle:
             manifest = json.load(handle)
         self.assertEqual(manifest["schemaVersion"], 1)
-        self.assertEqual(manifest["id"], "troy.omameter")
+        self.assertEqual(manifest["id"], "troy.mini-omatop")
         self.assertEqual(manifest["kinds"], ["panel"])
         self.assertTrue(manifest["keepLoaded"])
         self.assertEqual(manifest["entryPoints"]["panel"], "Panel.qml")

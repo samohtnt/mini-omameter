@@ -298,7 +298,7 @@ def interval_seconds(raw: str) -> float:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Emit Omameter JSON samples.")
+    parser = argparse.ArgumentParser(description="Emit mini-omatop JSON samples.")
     parser.add_argument("--interval", type=interval_seconds, default=1.0, help="Seconds between samples (at least 0.25).")
     parser.add_argument("--once", action="store_true", help="Print one sample and exit.")
     args = parser.parse_args()

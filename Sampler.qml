@@ -52,7 +52,7 @@ Item {
       root.invalidOutputWarned = false
     } catch (e) {
       if (!root.invalidOutputWarned)
-        console.warn("Omameter: invalid sampler output", e)
+        console.warn("mini-omatop: invalid sampler output", e)
       root.invalidOutputWarned = true
     }
   }

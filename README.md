@@ -1,4 +1,4 @@
-# Omameter
+# mini-omatop
 
 A super-minimal Omarchy plugin with one meter on each screen edge: CPU at the top, RAM on the left, root filesystem on the right, and network at the bottom.
 
@@ -20,19 +20,19 @@ On the filesystem meter, a bright 12-pixel marker rests at the current usage lev
 
 ## Install on Omarchy
 
-Omameter is a git repo with `manifest.json` at the root. From a clone of this repository:
+mini-omatop is a git repo with `manifest.json` at the root. From a clone of this repository:
 
 ```sh
-omarchy plugin add /path/to/omameter --enable
+omarchy plugin add /path/to/mini-omatop --enable
 ```
 
 Or from a published git URL:
 
 ```sh
-omarchy plugin add https://github.com/samohtnt/mini-omameter.git --enable
+omarchy plugin add https://github.com/samohtnt/mini-omatop.git --enable
 ```
 
-The installer clones into `~/.config/omarchy/plugins/troy.omameter`, validates the manifest, and enables the panel. `keepLoaded` mounts it for the session, so the meters appear as soon as the shell loads the plugin.
+The installer clones into `~/.config/omarchy/plugins/troy.mini-omatop`, validates the manifest, and enables the panel. `keepLoaded` mounts it for the session, so the meters appear as soon as the shell loads the plugin.
 
 To keep windows clear of all four strips, reserve three pixels at the top, left, and right, and two at the bottom of each monitor in `~/.config/hypr/monitors.lua`. Add `reserved_area` to the existing `hl.monitor` rule for each output, preserving its mode, position, and scale:
 
@@ -56,9 +56,9 @@ omarchy-restart-shell
 
 ```sh
 mkdir -p ~/.config/omarchy/plugins
-cp -r . ~/.config/omarchy/plugins/troy.omameter
+cp -r . ~/.config/omarchy/plugins/troy.mini-omatop
 omarchy-shell shell rescanPlugins
-omarchy plugin enable troy.omameter
+omarchy plugin enable troy.mini-omatop
 ```
 
 Do not put a symlink in the plugin folder. Omarchy rejects plugins that contain symlinks.
@@ -68,8 +68,8 @@ Do not put a symlink in the plugin folder. Omarchy rejects plugins that contain 
 The meters stay up while the plugin is enabled. To tuck them away without removing it:
 
 ```sh
-omarchy-shell shell hide troy.omameter
-omarchy-shell shell summon troy.omameter '{}'
+omarchy-shell shell hide troy.mini-omatop
+omarchy-shell shell summon troy.mini-omatop '{}'
 ```
 
 If the menubar autohides, the meters hide with it.
@@ -78,7 +78,7 @@ Hiding the plugin explicitly also stops its sampler until it is shown again.
 ## Remove
 
 ```sh
-omarchy plugin remove troy.omameter
+omarchy plugin remove troy.mini-omatop
 ```
 
 ## What it reads
@@ -99,9 +99,9 @@ No extra packages. Python 3 is used as a long-running sampler inside `omarchy-sh
 python3 -m unittest discover -s tests -v
 ```
 
-On an Omarchy machine, after copying into `~/.config/omarchy/plugins/troy.omameter`, saving a QML file reloads the plugin. You can also force it:
+On an Omarchy machine, after copying into `~/.config/omarchy/plugins/troy.mini-omatop`, saving a QML file reloads the plugin. You can also force it:
 
 ```sh
-omarchy plugin validate ~/.config/omarchy/plugins/troy.omameter
+omarchy plugin validate ~/.config/omarchy/plugins/troy.mini-omatop
 omarchy-shell shell rescanPlugins
 ```

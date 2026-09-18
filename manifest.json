@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "troy.omameter",
-  "name": "Omameter",
-  "version": "1.0.3",
+  "id": "troy.mini-omatop",
+  "name": "mini-omatop",
+  "version": "1.0.4",
   "author": "Troy Thomas",
   "license": "MIT",
   "description": "CPU, RAM, root filesystem, and network meters on the four edges of the monitor.",

@@ -34,7 +34,7 @@ Item {
         exclusionMode: ExclusionMode.Ignore
         implicitHeight: 3
         mask: Region {}
-        WlrLayershell.namespace: "omameter-cpu"
+        WlrLayershell.namespace: "mini-omatop-cpu"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { top: true; left: true; right: true }
@@ -54,7 +54,7 @@ Item {
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: 3
         mask: Region {}
-        WlrLayershell.namespace: "omameter-ram"
+        WlrLayershell.namespace: "mini-omatop-ram"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { top: true; bottom: true; left: true }
@@ -74,7 +74,7 @@ Item {
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: 3
         mask: Region {}
-        WlrLayershell.namespace: "omameter-disk"
+        WlrLayershell.namespace: "mini-omatop-disk"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { top: true; bottom: true; right: true }
@@ -94,7 +94,7 @@ Item {
         exclusionMode: ExclusionMode.Ignore
         implicitHeight: 2
         mask: Region {}
-        WlrLayershell.namespace: "omameter-network"
+        WlrLayershell.namespace: "mini-omatop-network"
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         anchors { bottom: true; left: true; right: true }
