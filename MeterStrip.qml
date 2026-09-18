@@ -67,6 +67,7 @@ Item {
         property real displayedAmount: 0
         property real peakAmount: 0
         property real peakOpacity: 0
+        property real diskFlashOpacity: 0
         property bool ready: false
 
         function applySample() {
@@ -78,8 +79,6 @@ Item {
 
           if (root.meter === "disk") {
             peakAmount = targetAmount
-            if (peakOpacity === 0)
-              peakOpacity = 0.35
           } else if (targetAmount > 0 && (targetAmount > peakAmount || peakOpacity === 0)) {
             peakAmount = targetAmount
             peakFade.stop()
@@ -129,9 +128,9 @@ Item {
 
         SequentialAnimation {
           id: diskFlash
-          NumberAnimation { target: meterItem; property: "peakOpacity"; to: 1; duration: 90 }
-          PauseAnimation { duration: 130 }
-          NumberAnimation { target: meterItem; property: "peakOpacity"; to: 0.35; duration: 650 }
+          NumberAnimation { target: meterItem; property: "diskFlashOpacity"; to: 1; duration: 90 }
+          PauseAnimation { duration: 160 }
+          NumberAnimation { target: meterItem; property: "diskFlashOpacity"; to: 0; duration: 700 }
         }
 
         Rectangle {
@@ -147,9 +146,19 @@ Item {
           x: 0
           y: Math.max(0, Math.min(parent.height - height, parent.height * (1 - parent.peakAmount) - height / 2))
           width: parent.width
-          height: 2
-          color: root.meter === "disk" ? Color.bar.active : Color.bar.text
-          opacity: parent.peakOpacity
+          height: root.meter === "disk" ? 12 : 2
+          color: Color.bar.text
+          opacity: root.meter === "disk" ? 0.9 : parent.peakOpacity
+        }
+
+        Rectangle {
+          visible: root.meter === "disk"
+          x: 0
+          y: Math.max(0, Math.min(parent.height - height, parent.height * (1 - parent.peakAmount) - height / 2))
+          width: parent.width
+          height: 20
+          color: Color.bar.active
+          opacity: parent.diskFlashOpacity
         }
 
         Repeater {
