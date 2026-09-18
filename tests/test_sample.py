@@ -111,6 +111,18 @@ class ManifestTests(unittest.TestCase):
         for name in ("Panel.qml", "MeterStrip.qml", "Sampler.qml", "sample.py"):
             self.assertTrue(os.path.isfile(os.path.join(root, name)), name)
 
+    def test_panel_uses_bezel_exclusive_zone(self):
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with open(os.path.join(root, "Panel.qml"), encoding="utf-8") as handle:
+            qml = handle.read()
+        self.assertIn("exclusiveZone: -1", qml)
+        self.assertNotIn("exclusiveZone: 0", qml)
+        self.assertIn("exclusionMode: ExclusionMode.Ignore", qml)
+        self.assertIn("top: root.barPosition === \"top\" || root.vertical", qml)
+        self.assertIn("bottom: root.barPosition === \"bottom\" || root.vertical", qml)
+        self.assertIn("left: root.barPosition === \"left\" || !root.vertical", qml)
+        self.assertIn("right: root.barPosition === \"right\" || !root.vertical", qml)
+
 
 class OnceTests(unittest.TestCase):
     def test_once_prints_json(self):

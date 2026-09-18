@@ -70,8 +70,12 @@ Item {
         screen: modelData
         visible: root.showing
         color: "transparent"
-        exclusiveZone: 0
+        // Zone 0 yields to the bar and sits on its inner edge (under a top
+        // bar). -1 is the layer-shell "real output edge" value, so meters
+        // sit on the bezel side. Set last: exclusiveZone writes the protocol
+        // value and would clobber Ignore if it came first as 0.
         exclusionMode: ExclusionMode.Ignore
+        exclusiveZone: -1
         implicitWidth: root.vertical ? root.stripPx : 0
         implicitHeight: root.vertical ? 0 : root.stripPx
         mask: Region {}
