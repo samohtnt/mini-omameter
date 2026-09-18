@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "troy.mini-omatop",
   "name": "mini-omatop",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "author": "Troy Thomas",
   "license": "MIT",
   "description": "CPU, RAM, root filesystem, and network meters on the four edges of the monitor.",

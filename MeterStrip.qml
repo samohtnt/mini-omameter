@@ -128,7 +128,8 @@ Item {
           color: root.fillColor(parent.baseColor, Color.bar.active, parent.displayedAmount * 100)
 
           Rectangle {
-            anchors.fill: parent
+            width: parent.width
+            height: Math.min(9, parent.height)
             visible: root.meter === "disk"
             color: Color.bar.text
             opacity: meterItem.diskFlashOpacity
