@@ -10,9 +10,13 @@ A super-minimal Omarchy plugin with one meter on each screen edge: CPU at the to
               ← UP / DOWN →
 ```
 
-Each monitor gets 1-pixel meters below 1200 logical pixels of height, or 3-pixel meters at 1200 and above. The bottom network meter is one split bar: upload occupies the left half and download the right half. Upload grows leftward and download grows rightward from the screen center. The network halves share a decaying peak, so their lengths show the relative rates. Its idle track and panel background are transparent; traffic fills and fading peak marks appear when data moves. The other three edge strips use the bar's background color. CPU grows outward from the horizontal center; RAM and root filesystem grow upward from the bottom edge. Meter fills use the active Omarchy theme: accent for CPU and download, bar text for RAM and upload, and muted for filesystem. As usage rises, each fill blends toward the theme’s bar active color. Clicks pass through.
+Each monitor gets 1-pixel meters below 1200 logical pixels of height, or 3-pixel meters at 1200 and above. CPU grows outward from the horizontal center; RAM and root filesystem grow upward from the bottom edge.
 
-Colors are bound to Omarchy's live theme palette, so a theme switch updates the fills, tracks, markers, and bar-matched backgrounds without restarting the shell.
+The bottom network meter is one split bar. Upload grows leftward from the center, and download grows rightward. The two halves share a decaying peak, so their lengths show the relative rates. The idle track and panel background are transparent; traffic fills and fading peak marks appear when data moves.
+
+The other three edge strips use the bar's background color. Meter fills use the active Omarchy theme: accent for CPU and download, bar text for RAM and upload, and muted for filesystem. As usage rises, each fill blends toward the theme's bar active color. Clicks pass through.
+
+Colors are bound to Omarchy's live theme palette, so a theme switch updates the fills, tracks, peak marks, and bar-matched backgrounds without restarting the shell.
 
 The fills rise smoothly over 280 ms and fall over 900 ms. A thin theme-colored high-water mark stays at the latest peak for 1.4 seconds, then fades over 4.2 seconds. The top CPU bar shows the mark at both ends of its center-out fill; each network half shows one mark at its outer end, and RAM shows it at the upper end.
 

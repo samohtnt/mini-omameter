@@ -16,8 +16,6 @@ Item {
   readonly property bool networkOnly: meter === "network"
   readonly property color trackColor: networkOnly ? "transparent" : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.14)
 
-  readonly property int meterCount: networkOnly ? 2 : 1
-
   function fillColor(baseColor, hot, percent) {
     var p = Math.max(0, Math.min(100, Number(percent) || 0)) / 100
     return Qt.rgba(
@@ -28,15 +26,13 @@ Item {
     )
   }
 
-  Grid {
-    id: grid
+  Row {
+    id: meterRow
     anchors.fill: parent
-    columns: root.vertical || root.networkOnly ? root.meterCount : 1
-    rows: root.vertical || root.networkOnly ? 1 : root.meterCount
     spacing: 0
 
     Repeater {
-      model: root.meterCount
+      model: root.networkOnly ? 2 : 1
 
       Rectangle {
         id: meterItem
@@ -47,8 +43,8 @@ Item {
           : root.meter === "ram" || (root.networkOnly && index === 0) ? Color.bar.text : Color.accent
         readonly property real targetAmount: {
           var amount = Math.max(0, Math.min(1, (Number(value) || 0) / 100))
-          if (root.networkOnly && amount > 0 && grid.width > 0)
-            amount = Math.max(amount, 2 / grid.width)
+          if (root.networkOnly && amount > 0 && meterRow.width > 0)
+            amount = Math.max(amount, 2 / meterRow.width)
           return amount
         }
         readonly property int pulse: root.diskPulse
@@ -86,8 +82,8 @@ Item {
             diskFlash.restart()
         }
 
-        width: root.networkOnly ? grid.width / 2 : grid.width
-        height: grid.height
+        width: root.networkOnly ? meterRow.width / 2 : meterRow.width
+        height: meterRow.height
         color: root.trackColor
 
         NumberAnimation {
