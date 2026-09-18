@@ -94,7 +94,7 @@ Item {
         required property var modelData
         screen: modelData
         visible: root.showing
-        color: Color.bar.background
+        color: "transparent"
         exclusionMode: ExclusionMode.Ignore
         implicitHeight: root.edgePixels(modelData)
         mask: Region {}

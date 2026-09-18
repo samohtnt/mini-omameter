@@ -14,7 +14,7 @@ Item {
   property int diskPulse: 0
 
   readonly property bool networkOnly: meter === "network"
-  readonly property color trackColor: networkOnly ? Color.muted : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.14)
+  readonly property color trackColor: networkOnly ? "transparent" : Qt.rgba(Color.foreground.r, Color.foreground.g, Color.foreground.b, 0.14)
 
   readonly property int meterCount: networkOnly ? 2 : 1
 
